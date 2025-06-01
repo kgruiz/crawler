@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import os
@@ -53,7 +54,35 @@ async def GetPageHRefs(page: pydoll.browser.page.Page) -> list[str]:
     return hrefs
 
 
-async def Scrape():
+async def GetPageSelfHRefs(
+    page: pydoll.browser.page.Page, buildURLs: bool = True
+) -> list[str]:
+    """
+    Get all hrefs that are relative to the current page URL.
+    """
+
+    hrefs = await GetPageHRefs(page)
+
+    selfHRefs = [href for href in hrefs if href.startswith("/")]
+
+    if buildURLs:
+
+        pageURL = await page.current_url
+
+        pageURL = urlparse(pageURL)
+
+        baseURL = f"{pageURL.scheme}://{pageURL.netloc}"
+
+        fullSelfHRefs = [f"{baseURL}{selfHRef}" for selfHRef in selfHRefs]
+
+        return fullSelfHRefs
+
+    else:
+
+        return selfHRefs
+
+
+async def Start():
 
     options = Options()
     options.add_argument("--headless=new")
@@ -64,16 +93,29 @@ async def Scrape():
 
         await browser.start()
         page = await browser.get_page()
-        print(type(page))
+
         await page.go_to("https://github.com/autoscrape-labs/pydoll")
         await page._wait_page_load()
 
-        print(await GetPageHRefs(page))
+        links = await GetPageSelfHRefs(page, buildURLs=True)
+
+        Path("links.json").write_text(json.dumps(links, indent=4))
 
 
 def main():
 
-    asyncio.run(Scrape())
+    # parser = argparse.ArgumentParser(description=f"Web Crawler")
+
+    # parser.add_argument("-u", "--url", help="URL to start at", required=True)
+    # parser.add_argument(
+    #     "-b",
+    #     "--base",
+    #     help="Base path that all pages that are saved must start with. Default to given url from --url.",
+    #     required=False,
+    #     default=None,
+    # )
+
+    asyncio.run(Start())
 
 
 if __name__ == "__main__":
