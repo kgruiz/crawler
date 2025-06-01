@@ -82,7 +82,7 @@ async def GetPageSelfHRefs(
         return selfHRefs
 
 
-async def Start():
+async def Start(url, base):
 
     options = Options()
     options.add_argument("--headless=new")
@@ -94,12 +94,14 @@ async def Start():
         await browser.start()
         page = await browser.get_page()
 
-        await page.go_to("https://github.com/autoscrape-labs/pydoll")
+        await page.go_to(url)
         await page._wait_page_load()
 
         links = await GetPageSelfHRefs(page, buildURLs=True)
 
-        Path("links.json").write_text(json.dumps(links, indent=4))
+        validSelfHRefs = [link for link in links if link.startswith(base)]
+
+        Path("links.json").write_text(json.dumps(validSelfHRefs, indent=4))
 
 
 def main():
@@ -115,7 +117,17 @@ def main():
     #     default=None,
     # )
 
-    asyncio.run(Start())
+    # args = parser.parse_args()
+
+    # url = args.url
+
+    # base = args.base if args.base else url
+
+    url = "https://github.com/autoscrape-labs/pydoll"
+
+    base = url
+
+    asyncio.run(Start(url=url, base=base))
 
 
 if __name__ == "__main__":
