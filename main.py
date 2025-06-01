@@ -2,13 +2,34 @@ import argparse
 import asyncio
 import json
 import os
+from collections import deque
 from pathlib import Path
 from urllib.parse import urlparse
 
 import pydoll
+import rich
 from pydoll.browser.chrome import Chrome
 from pydoll.browser.options import Options
 from pydoll.constants import By
+from rich.console import Console
+from rich.layout import Layout
+from rich.padding import Padding
+from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
+from rich.rule import Rule
+from rich.table import Table
+from rich.text import Text
+from rich.theme import Theme
+
+console = Console()
 
 
 async def GetPageScreenshot(
@@ -82,26 +103,101 @@ async def GetPageSelfHRefs(
         return selfHRefs
 
 
-async def Start(url, base):
+async def Start(url, base, initialOnly):
+
+    seen = set()
+    stack = deque()
 
     options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--start-maximized")
     options.add_argument("--disable-notifications")
 
-    async with Chrome(options=options) as browser:
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[bold blue]{task.description}", justify="left"),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        BarColumn(bar_width=None),
+        MofNCompleteColumn(),
+        TextColumn("•"),
+        TimeElapsedColumn(),
+        TextColumn("•"),
+        TimeRemainingColumn(),
+        expand=True,
+    ) as progress:
 
-        await browser.start()
-        page = await browser.get_page()
+        task = progress.add_task("Gathering URLs...", total=1)
 
-        await page.go_to(url)
-        await page._wait_page_load()
+        progress.update(task, description=f"Scraping {url}", refresh=True)
 
-        links = await GetPageSelfHRefs(page, buildURLs=True)
+        async with Chrome(options=options) as browser:
 
-        validSelfHRefs = [link for link in links if link.startswith(base)]
+            await browser.start()
+            page = await browser.get_page()
 
-        Path("links.json").write_text(json.dumps(validSelfHRefs, indent=4))
+            await page.go_to(url)
+            await page._wait_page_load()
+
+            links = await GetPageSelfHRefs(page, buildURLs=True)
+
+            validSelfHRefs = set([link for link in links if link.startswith(base)])
+
+            seen.add(url)
+
+            stack.extend(validSelfHRefs)
+
+            totalLinks = len(seen) + len(stack)
+
+            progress.update(
+                task,
+                description=f"Scraped {url}",
+                advance=1,
+                total=totalLinks,
+                refresh=True,
+            )
+
+            if initialOnly:
+
+                return list(validSelfHRefs)
+
+            else:
+
+                while stack:
+
+                    url = stack.pop()
+
+                    if url not in seen:
+
+                        progress.update(
+                            task, description=f"Scraping {url}", refresh=True
+                        )
+
+                        await page.go_to(url)
+                        await page._wait_page_load()
+
+                        links = await GetPageSelfHRefs(page, buildURLs=True)
+
+                        validSelfHRefs = set(
+                            [link for link in links if link.startswith(base)]
+                        )
+
+                        newUrls = set(validSelfHRefs) - set(seen) - set(stack)
+
+                        stack.extend(newUrls)
+
+                        totalLinks = len(seen) + len(stack)
+
+                        seen.add(url)
+
+                        progress.update(
+                            task,
+                            description=f"Scraped {url}",
+                            advance=1,
+                            total=totalLinks,
+                            refresh=True,
+                        )
+
+                return seen
 
 
 def main():
@@ -117,6 +213,8 @@ def main():
     #     default=None,
     # )
 
+    # parser.add_argument("i", "initial_only", help="Only get links from the given url", default=False)
+
     # args = parser.parse_args()
 
     # url = args.url
@@ -127,7 +225,9 @@ def main():
 
     base = url
 
-    asyncio.run(Start(url=url, base=base))
+    initialOnly = False
+
+    asyncio.run(Start(url=url, base=base, initialOnly=initialOnly))
 
 
 if __name__ == "__main__":
