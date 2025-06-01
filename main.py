@@ -44,6 +44,15 @@ async def GetPagePDF(
     await page.print_to_pdf(str(savePath))
 
 
+async def GetPageHRefs(page: pydoll.browser.page.Page) -> list[str]:
+
+    refs = await page.find_elements(by=By.CSS_SELECTOR, value="[href]")
+
+    hrefs = [element.get_attribute("href") for element in refs]
+
+    return hrefs
+
+
 async def Scrape():
 
     options = Options()
@@ -57,6 +66,9 @@ async def Scrape():
         page = await browser.get_page()
         print(type(page))
         await page.go_to("https://github.com/autoscrape-labs/pydoll")
+        await page._wait_page_load()
+
+        print(await GetPageHRefs(page))
 
 
 def main():
