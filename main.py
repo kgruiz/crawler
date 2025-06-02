@@ -70,7 +70,7 @@ async def GetPageHRefs(page: pydoll.browser.page.Page) -> list[str]:
 
     refs = await page.find_elements(by=By.CSS_SELECTOR, value="[href]")
 
-    hrefs = [await element.get_attribute("href") for element in refs]
+    hrefs = [element.get_attribute("href") for element in refs]
 
     return hrefs
 
@@ -103,7 +103,17 @@ async def GetPageSelfHRefs(
         return selfHRefs
 
 
-async def Start(url, base, initialOnly):
+async def Start(
+    url: str, base: list[str] | str, exclude: list[str] | str, initialOnly: bool
+):
+
+    if isinstance(base, str):
+
+        base = [base]
+
+    if isinstance(exclude, str):
+
+        exclude = [exclude]
 
     seen = set()
     stack = deque()
@@ -130,7 +140,15 @@ async def Start(url, base, initialOnly):
 
         task = progress.add_task("Gathering URLs...", total=1)
 
-        progress.update(task, description=f"Scraping {url}", refresh=True)
+        if len(url) > 40:
+
+            displayUrl = f"{url[:20]}...{url[-20:]}"
+
+        else:
+
+            displayUrl = url
+
+        progress.update(task, description=f"Scraping {displayUrl}", refresh=True)
 
         async with Chrome(options=options) as browser:
 
@@ -144,7 +162,12 @@ async def Start(url, base, initialOnly):
 
             links = await GetPageSelfHRefs(page, buildURLs=True)
 
-            validSelfHRefs = set([link for link in links if link.startswith(base)])
+            validSelfHRefs = {
+                link
+                for link in links
+                if link.startswith(tuple(base))
+                and not any(link.startswith(e) for e in exclude)
+            }
 
             seen.add(url)
 
@@ -154,7 +177,7 @@ async def Start(url, base, initialOnly):
 
             progress.update(
                 task,
-                description=f"Scraped {url}",
+                description=f"Scraped {displayUrl}",
                 advance=1,
                 total=totalLinks,
                 refresh=True,
@@ -172,10 +195,54 @@ async def Start(url, base, initialOnly):
 
                     url = stack.pop()
 
+                    if len(url) > 40:
+
+                        displayUrl = f"{url[:20]}...{url[-20:]}"
+
+                    else:
+
+                        displayUrl = url
+
+                    if url.endswith(".zip"):
+
+                        seen.add(url)
+
+                        progress.update(
+                            task,
+                            description=f"Scraped {displayUrl}",
+                            advance=1,
+                            total=totalLinks,
+                            refresh=True,
+                        )
+
+                    if url.endswith(".pdf"):
+
+                        seen.add(url)
+
+                        progress.update(
+                            task,
+                            description=f"Scraped {displayUrl}",
+                            advance=1,
+                            total=totalLinks,
+                            refresh=True,
+                        )
+
+                    if url.endswith(".m3u8"):
+
+                        seen.add(url)
+
+                        progress.update(
+                            task,
+                            description=f"Scraped {displayUrl}",
+                            advance=1,
+                            total=totalLinks,
+                            refresh=True,
+                        )
+
                     if url not in seen:
 
                         progress.update(
-                            task, description=f"Scraping {url}", refresh=True
+                            task, description=f"Scraping {displayUrl}", refresh=True
                         )
 
                         await page.go_to(url)
@@ -189,9 +256,12 @@ async def Start(url, base, initialOnly):
 
                         links = await GetPageSelfHRefs(page, buildURLs=True)
 
-                        validSelfHRefs = set(
-                            [link for link in links if link.startswith(base)]
-                        )
+                        validSelfHRefs = {
+                            link
+                            for link in links
+                            if link.startswith(tuple(base))
+                            and not any(link.startswith(e) for e in exclude)
+                        }
 
                         newUrls = set(validSelfHRefs) - set(seen) - set(stack)
 
@@ -205,7 +275,7 @@ async def Start(url, base, initialOnly):
 
                         progress.update(
                             task,
-                            description=f"Scraped {url}",
+                            description=f"Scraped {displayUrl}",
                             advance=1,
                             total=totalLinks,
                             refresh=True,
@@ -235,13 +305,15 @@ def main():
 
     # base = args.base if args.base else url
 
-    url = "https://www.apple.com/mac/"
+    url = "https://developer.apple.com/documentation/"
 
-    base = "https://www.apple.com"
+    base = "https://developer.apple.com/documentation/"
+
+    exclude = []
 
     initialOnly = False
 
-    asyncio.run(Start(url=url, base=base, initialOnly=initialOnly))
+    asyncio.run(Start(url=url, base=base, exclude=exclude, initialOnly=initialOnly))
 
 
 if __name__ == "__main__":
