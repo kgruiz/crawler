@@ -4,7 +4,7 @@ import json
 import os
 from collections import deque
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import pydoll
 import rich
@@ -162,6 +162,18 @@ async def Start(
 
             links = await GetPageSelfHRefs(page, buildURLs=True)
 
+            cleanedLinks = []
+
+            for link in links:
+
+                parsed = urlparse(link)
+
+                # Drop the fragment (last part)
+                urlWithoutFragment = urlunparse(parsed._replace(fragment=""))
+                cleanedLinks.append(urlWithoutFragment)
+
+            links = set(cleanedLinks)
+
             validSelfHRefs = {
                 link
                 for link in links
@@ -255,6 +267,20 @@ async def Start(
                         )
 
                         links = await GetPageSelfHRefs(page, buildURLs=True)
+
+                        cleanedLinks = []
+
+                        for link in links:
+
+                            parsed = urlparse(link)
+
+                            # Drop the fragment (last part)
+                            urlWithoutFragment = urlunparse(
+                                parsed._replace(fragment="")
+                            )
+                            cleanedLinks.append(urlWithoutFragment)
+
+                        links = set(cleanedLinks)
 
                         validSelfHRefs = {
                             link
