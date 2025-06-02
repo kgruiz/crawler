@@ -70,7 +70,7 @@ async def GetPageHRefs(page: pydoll.browser.page.Page) -> list[str]:
 
     refs = await page.find_elements(by=By.CSS_SELECTOR, value="[href]")
 
-    hrefs = [element.get_attribute("href") for element in refs]
+    hrefs = [await element.get_attribute("href") for element in refs]
 
     return hrefs
 
@@ -113,6 +113,8 @@ async def Start(url, base, initialOnly):
     options.add_argument("--start-maximized")
     options.add_argument("--disable-notifications")
 
+    allLinks = []
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[bold blue]{task.description}", justify="left"),
@@ -138,6 +140,8 @@ async def Start(url, base, initialOnly):
             await page.go_to(url)
             await page._wait_page_load()
 
+            allLinks.append(url)
+
             links = await GetPageSelfHRefs(page, buildURLs=True)
 
             validSelfHRefs = set([link for link in links if link.startswith(base)])
@@ -158,6 +162,8 @@ async def Start(url, base, initialOnly):
 
             if initialOnly:
 
+                Path("links.json").write_text(json.dumps(list(seen), indent=4))
+
                 return list(validSelfHRefs)
 
             else:
@@ -175,6 +181,12 @@ async def Start(url, base, initialOnly):
                         await page.go_to(url)
                         await page._wait_page_load()
 
+                        allLinks.append(url)
+
+                        Path("allLinks.json").write_text(
+                            json.dumps(list(allLinks), indent=4)
+                        )
+
                         links = await GetPageSelfHRefs(page, buildURLs=True)
 
                         validSelfHRefs = set(
@@ -188,6 +200,8 @@ async def Start(url, base, initialOnly):
                         totalLinks = len(seen) + len(stack)
 
                         seen.add(url)
+
+                        Path("links.json").write_text(json.dumps(list(seen), indent=4))
 
                         progress.update(
                             task,
@@ -221,9 +235,9 @@ def main():
 
     # base = args.base if args.base else url
 
-    url = "https://github.com/autoscrape-labs/pydoll"
+    url = "https://www.apple.com/mac/"
 
-    base = url
+    base = "https://www.apple.com"
 
     initialOnly = False
 
