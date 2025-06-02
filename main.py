@@ -331,9 +331,9 @@ def main():
 
     # base = args.base if args.base else url
 
-    url = "https://developer.apple.com/documentation/"
+    url = "https://developer.apple.com/documentation/eventkit"
 
-    base = "https://developer.apple.com/documentation/"
+    base = "https://developer.apple.com/documentation/eventkit"
 
     exclude = []
 
