@@ -32,13 +32,13 @@ from rich.theme import Theme
 
 async def GetPageHTML(
     page: pydoll.browser.page.Page,
-    output_dir: Path,
+    outputDir: Path,
     savePath: Path | str = None,
 ) -> None:
     if savePath is None:
         url = await page.current_url
         pageName = urlparse(url).path.strip("/").replace("/", "_") or "index"
-        savePath = output_dir / f"{pageName}.html"
+        savePath = outputDir / f"{pageName}.html"
     if isinstance(savePath, str):
         savePath = Path(savePath)
     html = await page.page_source
@@ -125,7 +125,7 @@ async def Start(
     exclude: list[str] | str,
     initialOnly: bool,
     saveHtml: bool = False,
-    output_dir: Path | str = Path("output"),
+    outputDir: Path | str = Path("output"),
 ):
 
     if isinstance(base, str):
@@ -136,8 +136,8 @@ async def Start(
 
         exclude = [exclude]
 
-    if isinstance(output_dir, str):
-        output_dir = Path(output_dir)
+    if isinstance(outputDir, str):
+        outputDir = Path(outputDir)
 
     seen = set()
     stack = deque()
@@ -182,7 +182,7 @@ async def Start(
             await page.go_to(url)
             await page._wait_page_load()
             if saveHtml:
-                await GetPageHTML(page, output_dir)
+                await GetPageHTML(page, outputDir)
 
             allLinks.append(url)
 
@@ -286,7 +286,7 @@ async def Start(
                         await page.go_to(url)
                         await page._wait_page_load()
                         if saveHtml:
-                            await GetPageHTML(page, output_dir)
+                            await GetPageHTML(page, outputDir)
 
                         allLinks.append(url)
 
@@ -377,8 +377,8 @@ def main():
     exclude = [e.strip() for e in args.exclude.split(",") if e.strip()]
     initialOnly = args.initial_only
     saveHtml = args.save_html
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    outputDir = Path(args.output_dir)
+    outputDir.mkdir(parents=True, exist_ok=True)
 
     asyncio.run(
         Start(
@@ -387,7 +387,7 @@ def main():
             exclude=exclude,
             initialOnly=initialOnly,
             saveHtml=saveHtml,
-            output_dir=output_dir,
+            outputDir=outputDir,
         )
     )
 
