@@ -29,6 +29,22 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
+
+async def GetPageHTML(
+    page: pydoll.browser.page.Page,
+    output_dir: Path,
+    savePath: Path | str = None,
+) -> None:
+    if savePath is None:
+        url = await page.current_url
+        pageName = urlparse(url).path.strip("/").replace("/", "_") or "index"
+        savePath = output_dir / f"{pageName}.html"
+    if isinstance(savePath, str):
+        savePath = Path(savePath)
+    html = await page.content()
+    savePath.write_text(html, encoding="utf-8")
+
+
 console = Console()
 
 
@@ -104,7 +120,12 @@ async def GetPageSelfHRefs(
 
 
 async def Start(
-    url: str, base: list[str] | str, exclude: list[str] | str, initialOnly: bool
+    url: str,
+    base: list[str] | str,
+    exclude: list[str] | str,
+    initialOnly: bool,
+    saveHtml: bool = False,
+    output_dir: Path | str = Path("output"),
 ):
 
     if isinstance(base, str):
@@ -114,6 +135,9 @@ async def Start(
     if isinstance(exclude, str):
 
         exclude = [exclude]
+
+    if isinstance(output_dir, str):
+        output_dir = Path(output_dir)
 
     seen = set()
     stack = deque()
@@ -157,6 +181,8 @@ async def Start(
 
             await page.go_to(url)
             await page._wait_page_load()
+            if saveHtml:
+                await GetPageHTML(page, output_dir)
 
             allLinks.append(url)
 
@@ -259,6 +285,8 @@ async def Start(
 
                         await page.go_to(url)
                         await page._wait_page_load()
+                        if saveHtml:
+                            await GetPageHTML(page, output_dir)
 
                         allLinks.append(url)
 
@@ -312,34 +340,56 @@ async def Start(
 
 def main():
 
-    # parser = argparse.ArgumentParser(description=f"Web Crawler")
+    parser = argparse.ArgumentParser(description="Web Crawler")
+    parser.add_argument("-u", "--url", help="URL to start at", required=True)
+    parser.add_argument(
+        "-b",
+        "--base",
+        help="Base path that all saved pages must start with.",
+        default=None,
+    )
+    parser.add_argument(
+        "-e",
+        "--exclude",
+        help="Comma-separated prefixes to skip",
+        default="",
+    )
+    parser.add_argument(
+        "--initial-only",
+        action="store_true",
+        help="Only collect links from the first page",
+    )
+    parser.add_argument(
+        "--save-html",
+        action="store_true",
+        help="If set, save each crawled page's HTML to disk",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        help="Directory to write HTML files into",
+        default="output",
+    )
 
-    # parser.add_argument("-u", "--url", help="URL to start at", required=True)
-    # parser.add_argument(
-    #     "-b",
-    #     "--base",
-    #     help="Base path that all pages that are saved must start with. Default to given url from --url.",
-    #     required=False,
-    #     default=None,
-    # )
+    args = parser.parse_args()
+    url = args.url
+    base = args.base or url
+    exclude = [e.strip() for e in args.exclude.split(",") if e.strip()]
+    initialOnly = args.initial_only
+    saveHtml = args.save_html
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # parser.add_argument("i", "initial_only", help="Only get links from the given url", default=False)
-
-    # args = parser.parse_args()
-
-    # url = args.url
-
-    # base = args.base if args.base else url
-
-    url = "https://developer.apple.com/documentation/eventkit"
-
-    base = "https://developer.apple.com/documentation/eventkit"
-
-    exclude = []
-
-    initialOnly = False
-
-    asyncio.run(Start(url=url, base=base, exclude=exclude, initialOnly=initialOnly))
+    asyncio.run(
+        Start(
+            url=url,
+            base=base,
+            exclude=exclude,
+            initialOnly=initialOnly,
+            saveHtml=saveHtml,
+            output_dir=output_dir,
+        )
+    )
 
 
 if __name__ == "__main__":
