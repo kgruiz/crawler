@@ -6,6 +6,7 @@ from collections import deque
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
+import html2text
 import pydoll
 import rich
 from pydoll.browser.chrome import Chrome
@@ -43,6 +44,22 @@ async def GetPageHTML(
         savePath = Path(savePath)
     html = await page.page_source
     savePath.write_text(html, encoding="utf-8")
+
+
+async def GetPageMarkdown(
+    page: pydoll.browser.page.Page,
+    outputDir: Path,
+    savePath: Path | str = None,
+) -> None:
+    if savePath is None:
+        url = await page.current_url
+        pageName = urlparse(url).path.strip("/").replace("/", "_") or "index"
+        savePath = outputDir / f"{pageName}.md"
+    if isinstance(savePath, str):
+        savePath = Path(savePath)
+    html = await page.page_source
+    markdown = html2text.html2text(html)
+    savePath.write_text(markdown, encoding="utf-8")
 
 
 console = Console()
@@ -125,6 +142,7 @@ async def Start(
     exclude: list[str] | str,
     initialOnly: bool,
     saveHtml: bool = False,
+    saveMd: bool = False,
     outputDir: Path | str = Path("output"),
 ):
 
@@ -140,6 +158,14 @@ async def Start(
         outputDir = Path(outputDir)
 
     outputDir.mkdir(parents=True, exist_ok=True)
+
+    if saveHtml and saveMd:
+        htmlDir = outputDir / "html"
+        mdDir = outputDir / "markdown"
+        htmlDir.mkdir(parents=True, exist_ok=True)
+        mdDir.mkdir(parents=True, exist_ok=True)
+    else:
+        htmlDir = mdDir = outputDir
 
     seen = set()
     stack = deque()
@@ -184,7 +210,9 @@ async def Start(
             await page.go_to(url)
             await page._wait_page_load()
             if saveHtml:
-                await GetPageHTML(page, outputDir)
+                await GetPageHTML(page, htmlDir)
+            if saveMd:
+                await GetPageMarkdown(page, mdDir)
 
             allLinks.append(url)
 
@@ -288,7 +316,9 @@ async def Start(
                         await page.go_to(url)
                         await page._wait_page_load()
                         if saveHtml:
-                            await GetPageHTML(page, outputDir)
+                            await GetPageHTML(page, htmlDir)
+                        if saveMd:
+                            await GetPageMarkdown(page, mdDir)
 
                         allLinks.append(url)
 
@@ -367,6 +397,11 @@ def main():
         help="If set, save each crawled page's HTML to disk",
     )
     parser.add_argument(
+        "--save-md",
+        action="store_true",
+        help="If set, save each crawled page as Markdown (.md) using html2text",
+    )
+    parser.add_argument(
         "-o",
         "--output-dir",
         help="Directory to write HTML files into",
@@ -379,6 +414,7 @@ def main():
     exclude = [e.strip() for e in args.exclude.split(",") if e.strip()]
     initialOnly = args.initial_only
     saveHtml = args.save_html
+    saveMd = args.save_md
     outputDir = Path(args.output_dir)
     outputDir.mkdir(parents=True, exist_ok=True)
 
@@ -389,6 +425,7 @@ def main():
             exclude=exclude,
             initialOnly=initialOnly,
             saveHtml=saveHtml,
+            saveMd=saveMd,
             outputDir=outputDir,
         )
     )
