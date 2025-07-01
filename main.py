@@ -41,7 +41,7 @@ async def GetPageHTML(
         savePath = output_dir / f"{pageName}.html"
     if isinstance(savePath, str):
         savePath = Path(savePath)
-    html = await page.content()
+    html = await page.page_source
     savePath.write_text(html, encoding="utf-8")
 
 
