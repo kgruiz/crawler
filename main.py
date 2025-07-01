@@ -139,6 +139,8 @@ async def Start(
     if isinstance(outputDir, str):
         outputDir = Path(outputDir)
 
+    outputDir.mkdir(parents=True, exist_ok=True)
+
     seen = set()
     stack = deque()
 
