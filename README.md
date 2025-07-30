@@ -2,6 +2,8 @@
 
 A headless-Chrome web crawler that discovers same-host links and optionally saves HTML, Markdown, PDF, or screenshots. Use as a library or via the `stealth-crawler` CLI.
 
+📦 [Available on PyPI](https://pypi.org/project/stealth-crawler/)
+
 ---
 
 ## Features
@@ -21,23 +23,33 @@ A headless-Chrome web crawler that discovers same-host links and optionally save
 
 ## Installation
 
-Install the latest stable release for everyday use:
+Install the latest stable release:
 
 ```bash
 pip install stealth-crawler
 ````
 
-Or in an isolated environment with **pipx**:
+Or in isolation:
 
 ```bash
 pipx install stealth-crawler
 ```
 
-Or via **Poetry**:
+Or via other tools:
 
-```bash
-poetry add stealth-crawler
-```
+* **uv**
+
+  ```bash
+  uv venv .venv
+  source .venv/bin/activate
+  uv pip install stealth-crawler
+  ```
+
+* **Poetry**
+
+  ```bash
+  poetry add stealth-crawler
+  ```
 
 ---
 
@@ -100,6 +112,7 @@ print(urls)
   ```bash
   pytest
   ```
+
 * Check formatting & linting:
 
   ```bash
@@ -127,7 +140,7 @@ print(urls)
    source .venv/bin/activate
    uv pip install -e ".[dev]"
    ```
-3. Implement your changes, add tests, run:
+3. Implement your changes, add tests, and run:
 
    ```bash
    black src tests
