@@ -19,6 +19,8 @@ __pycache__/
 
 # Python build output
 dist/
+build/
+*.egg-info/
 src/stealthcrawler.egg-info/
 
 # Auto-generated version file
