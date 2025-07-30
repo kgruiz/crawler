@@ -23,7 +23,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "pydoll",
+    "pydoll-python",
     "html2text",
     "rich",
     "click",
