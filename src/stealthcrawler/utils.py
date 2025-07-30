@@ -29,10 +29,26 @@ def safe_filename(url: str, ext: str = None) -> str:
     Returns:
         Safe filename string
     """
+    if not url:
+        raise ValueError("URL cannot be empty or None")
+
     parsed = urlparse(url)
     # Use netloc + path, replace / with _, default to index
     path_part = parsed.path.strip("/").replace("/", "_") or "index"
     filename = f"{parsed.netloc}_{path_part}" if parsed.netloc else path_part
+
+    # Remove unsafe filesystem characters
+    unsafe_chars = '<>:"|?*'
+    for char in unsafe_chars:
+        filename = filename.replace(char, "_")
+
+    # Truncate to filesystem limit (leave room for extension)
+    max_length = 255
+    if ext:
+        max_length -= len(ext)
+
+    if len(filename) > max_length:
+        filename = filename[:max_length]
 
     if ext:
         filename = f"{filename}{ext}"
