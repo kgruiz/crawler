@@ -31,12 +31,15 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-asyncio",
-    "aiohttp",
-    "black",
-    "ruff",
-    "setuptools_scm[toml]>=6.2"
+  "pytest",
+  "pytest-asyncio",
+  "aiohttp",
+  "black",
+  "ruff",
+  "setuptools_scm[toml]>=6.2",
+  "build",
+  "twine",
+  "wheel",
 ]
 
 [project.scripts]
