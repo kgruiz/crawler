@@ -8,7 +8,7 @@ from pydoll.constants import By
 from .utils import normalize_url
 
 
-async def get_hrefs(page: pydoll.browser.page.Page) -> list[str]:
+async def get_hrefs(page) -> list[str]:
     """Get all href attributes from anchor tags on the page.
 
     Args:
@@ -17,14 +17,12 @@ async def get_hrefs(page: pydoll.browser.page.Page) -> list[str]:
     Returns:
         List of href URLs found on the page
     """
-    refs = await page.find_elements(by=By.CSS_SELECTOR, value="[href]")
+    refs = await page.query("[href]", find_all=True)
     hrefs = [element.get_attribute("href") for element in refs]
     return hrefs
 
 
-async def get_self_hrefs(
-    page: pydoll.browser.page.Page, build_absolute: bool = True
-) -> list[str]:
+async def get_self_hrefs(page, build_absolute: bool = True) -> list[str]:
     """Get all href attributes that start with '/' (relative to current domain).
 
     Args:

@@ -8,7 +8,7 @@ import pydoll
 from .utils import safe_filename
 
 
-async def save_html(page: pydoll.browser.page.Page, out_dir: Path) -> None:
+async def save_html(page, out_dir: Path) -> None:
     """Save page HTML content to file.
 
     Args:
@@ -23,7 +23,7 @@ async def save_html(page: pydoll.browser.page.Page, out_dir: Path) -> None:
     save_path.write_text(html, encoding="utf-8")
 
 
-async def save_markdown(page: pydoll.browser.page.Page, out_dir: Path) -> None:
+async def save_markdown(page, out_dir: Path) -> None:
     """Save page content as Markdown using html2text.
 
     Args:
@@ -39,7 +39,7 @@ async def save_markdown(page: pydoll.browser.page.Page, out_dir: Path) -> None:
     save_path.write_text(markdown, encoding="utf-8")
 
 
-async def save_pdf(page: pydoll.browser.page.Page, path: Path) -> None:
+async def save_pdf(page, path: Path) -> None:
     """Save page as PDF file.
 
     Args:
@@ -49,7 +49,7 @@ async def save_pdf(page: pydoll.browser.page.Page, path: Path) -> None:
     await page.print_to_pdf(str(path))
 
 
-async def save_screenshot(page: pydoll.browser.page.Page, path: Path) -> None:
+async def save_screenshot(page, path: Path) -> None:
     """Save page screenshot as PNG file.
 
     Args:

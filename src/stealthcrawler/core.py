@@ -4,8 +4,8 @@ from collections import deque
 from pathlib import Path
 
 import pydoll
-from pydoll.browser.chrome import Chrome
-from pydoll.browser.options import Options
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions as Options
 
 from .fetchers import save_html, save_markdown
 from .parsers import get_self_hrefs
@@ -105,8 +105,7 @@ class StealthCrawler:
             progress.update(task, description=f"{action} {display_url}", refresh=True)
 
             async with Chrome(options=options) as browser:
-                await browser.start()
-                page = await browser.get_page()
+                page = await browser.start()
 
                 # Process the start URL
                 await self._process_page(page, start_url, progress, task)
@@ -136,9 +135,7 @@ class StealthCrawler:
 
                 return self._seen
 
-    async def _process_page(
-        self, page: pydoll.browser.page.Page, url: str, progress, task_id
-    ) -> None:
+    async def _process_page(self, page, url: str, progress, task_id) -> None:
         """Process a single page: visit, save content, extract links.
 
         Args:
