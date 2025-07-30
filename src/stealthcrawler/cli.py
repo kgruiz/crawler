@@ -8,10 +8,12 @@ import click
 from .core import StealthCrawler
 
 
-@click.group()
-def main():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def main(ctx):
     """Stealth Crawler - A headless Chrome web crawler."""
-    pass
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
 
 
 @main.command()
