@@ -15,11 +15,17 @@ async def save_html(page, out_dir: Path) -> None:
         page: The browser page to save
         out_dir: Output directory to save HTML file in
     """
-    url = await page.current_url
+    # Handle both property access and coroutine cases for testing
+    url = page.current_url
+    if hasattr(url, "__await__"):
+        url = await url
     filename = safe_filename(url, ".html")
     save_path = out_dir / filename
 
-    html = await page.page_source
+    # Handle both property access and coroutine cases for testing
+    html = page.page_source
+    if hasattr(html, "__await__"):
+        html = await html
     save_path.write_text(html, encoding="utf-8")
 
 
@@ -30,11 +36,17 @@ async def save_markdown(page, out_dir: Path) -> None:
         page: The browser page to save
         out_dir: Output directory to save Markdown file in
     """
-    url = await page.current_url
+    # Handle both property access and coroutine cases for testing
+    url = page.current_url
+    if hasattr(url, "__await__"):
+        url = await url
     filename = safe_filename(url, ".md")
     save_path = out_dir / filename
 
-    html = await page.page_source
+    # Handle both property access and coroutine cases for testing
+    html = page.page_source
+    if hasattr(html, "__await__"):
+        html = await html
     markdown = html2text.html2text(html)
     save_path.write_text(markdown, encoding="utf-8")
 
