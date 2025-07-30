@@ -34,10 +34,21 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "aiohttp",
+    "black",
+    "ruff",
+    "setuptools_scm[toml]>=6.2"
 ]
 
 [project.scripts]
 stealth-crawler = "stealthcrawler.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/kgruiz/stealth-crawler"
+Source = "https://github.com/kgruiz/stealth-crawler"
+Issues = "https://github.com/kgruiz/stealth-crawler/issues"
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
