@@ -1,2 +1,11 @@
 *.json
 output
+
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.pytest_cache/
+.mypy_cache/
+.venv/
+dist/
