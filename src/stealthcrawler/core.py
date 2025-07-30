@@ -55,12 +55,16 @@ class StealthCrawler:
         self.save_html = save_html
         self.save_md = save_md
         self.urls_only = urls_only
-        self.output_dir = Path(output_dir)
+        self.output_dir = Path(output_dir) if output_dir is not None else Path("output")
         self.headless = headless
 
         # Internal tracking
         self._seen: set[str] = set()
         self._stack: deque[str] = deque()
+
+        # Output directories
+        self.html_dir = self.output_dir / "html" if save_html else None
+        self.md_dir = self.output_dir / "markdown" if save_md else None
 
     async def crawl(self, start_url: str) -> set[str]:
         """Crawl starting from the given URL.
@@ -215,5 +219,5 @@ class StealthCrawler:
             Truncated URL string
         """
         if len(url) > 40:
-            return f"{url[:20]}...{url[-20:]}"
+            return f"{url[:20]}...{url[-17:]}"  # 20 + 3 + 17 = 40 chars
         return url
