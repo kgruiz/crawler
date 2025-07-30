@@ -36,7 +36,7 @@ Install the latest stable release:
 
 ```bash
 pip install stealth-crawler
-````
+```
 
 Or in isolation:
 
@@ -64,7 +64,7 @@ Or via other tools:
 
 ## Quickstart
 
-### Command-Line
+### <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png" alt="Terminal" width="30" style="vertical-align: middle;" /> Command-Line
 
 ```bash
 # Discover URLs only
@@ -82,7 +82,7 @@ stealth-crawler crawl https://example.com \
 
 Run `stealth-crawler --help` for full options.
 
-### Python API
+### <img src="https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg" alt="Python" width="30" style="vertical-align: middle;" /> Python API
 
 ```python
 import asyncio
