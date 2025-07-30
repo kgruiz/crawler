@@ -144,6 +144,7 @@ async def Start(
     saveHtml: bool = False,
     saveMd: bool = False,
     outputDir: Path | str = Path("output"),
+    urlsOnly: bool = False,
 ):
 
     if isinstance(base, str):
@@ -157,15 +158,17 @@ async def Start(
     if isinstance(outputDir, str):
         outputDir = Path(outputDir)
 
-    outputDir.mkdir(parents=True, exist_ok=True)
+    # Only create output directories if we're saving content
+    if not urlsOnly:
+        outputDir.mkdir(parents=True, exist_ok=True)
 
-    if saveHtml and saveMd:
-        htmlDir = outputDir / "html"
-        mdDir = outputDir / "markdown"
-        htmlDir.mkdir(parents=True, exist_ok=True)
-        mdDir.mkdir(parents=True, exist_ok=True)
-    else:
-        htmlDir = mdDir = outputDir
+        if saveHtml and saveMd:
+            htmlDir = outputDir / "html"
+            mdDir = outputDir / "markdown"
+            htmlDir.mkdir(parents=True, exist_ok=True)
+            mdDir.mkdir(parents=True, exist_ok=True)
+        else:
+            htmlDir = mdDir = outputDir
 
     seen = set()
     stack = deque()
@@ -190,7 +193,10 @@ async def Start(
         expand=True,
     ) as progress:
 
-        task = progress.add_task("Gathering URLs...", total=1)
+        if urlsOnly:
+            task = progress.add_task("Discovering URLs...", total=1)
+        else:
+            task = progress.add_task("Gathering URLs...", total=1)
 
         if len(url) > 40:
 
@@ -200,7 +206,8 @@ async def Start(
 
             displayUrl = url
 
-        progress.update(task, description=f"Scraping {displayUrl}", refresh=True)
+        action = "Discovering URLs from" if urlsOnly else "Scraping"
+        progress.update(task, description=f"{action} {displayUrl}", refresh=True)
 
         async with Chrome(options=options) as browser:
 
@@ -209,10 +216,11 @@ async def Start(
 
             await page.go_to(url)
             await page._wait_page_load()
-            if saveHtml:
-                await GetPageHTML(page, htmlDir)
-            if saveMd:
-                await GetPageMarkdown(page, mdDir)
+            if not urlsOnly:
+                if saveHtml:
+                    await GetPageHTML(page, htmlDir)
+                if saveMd:
+                    await GetPageMarkdown(page, mdDir)
 
             allLinks.append(url)
 
@@ -243,9 +251,10 @@ async def Start(
 
             totalLinks = len(seen) + len(stack)
 
+            action = "Discovered URLs from" if urlsOnly else "Scraped"
             progress.update(
                 task,
-                description=f"Scraped {displayUrl}",
+                description=f"{action} {displayUrl}",
                 advance=1,
                 total=totalLinks,
                 refresh=True,
@@ -275,9 +284,10 @@ async def Start(
 
                         seen.add(url)
 
+                        action = "Discovered URLs from" if urlsOnly else "Scraped"
                         progress.update(
                             task,
-                            description=f"Scraped {displayUrl}",
+                            description=f"{action} {displayUrl}",
                             advance=1,
                             total=totalLinks,
                             refresh=True,
@@ -287,9 +297,10 @@ async def Start(
 
                         seen.add(url)
 
+                        action = "Discovered URLs from" if urlsOnly else "Scraped"
                         progress.update(
                             task,
-                            description=f"Scraped {displayUrl}",
+                            description=f"{action} {displayUrl}",
                             advance=1,
                             total=totalLinks,
                             refresh=True,
@@ -299,9 +310,10 @@ async def Start(
 
                         seen.add(url)
 
+                        action = "Discovered URLs from" if urlsOnly else "Scraped"
                         progress.update(
                             task,
-                            description=f"Scraped {displayUrl}",
+                            description=f"{action} {displayUrl}",
                             advance=1,
                             total=totalLinks,
                             refresh=True,
@@ -309,16 +321,18 @@ async def Start(
 
                     if url not in seen:
 
+                        action = "Discovering URLs from" if urlsOnly else "Scraping"
                         progress.update(
-                            task, description=f"Scraping {displayUrl}", refresh=True
+                            task, description=f"{action} {displayUrl}", refresh=True
                         )
 
                         await page.go_to(url)
                         await page._wait_page_load()
-                        if saveHtml:
-                            await GetPageHTML(page, htmlDir)
-                        if saveMd:
-                            await GetPageMarkdown(page, mdDir)
+                        if not urlsOnly:
+                            if saveHtml:
+                                await GetPageHTML(page, htmlDir)
+                            if saveMd:
+                                await GetPageMarkdown(page, mdDir)
 
                         allLinks.append(url)
 
@@ -359,9 +373,10 @@ async def Start(
 
                         Path("links.json").write_text(json.dumps(list(seen), indent=4))
 
+                        action = "Discovered URLs from" if urlsOnly else "Scraped"
                         progress.update(
                             task,
-                            description=f"Scraped {displayUrl}",
+                            description=f"{action} {displayUrl}",
                             advance=1,
                             total=totalLinks,
                             refresh=True,
@@ -407,6 +422,11 @@ def main():
         help="Directory to write HTML files into",
         default="output",
     )
+    parser.add_argument(
+        "--urls-only",
+        action="store_true",
+        help="Only discover and return URLs without saving any content",
+    )
 
     args = parser.parse_args()
     url = args.url
@@ -416,7 +436,7 @@ def main():
     saveHtml = args.save_html
     saveMd = args.save_md
     outputDir = Path(args.output_dir)
-    outputDir.mkdir(parents=True, exist_ok=True)
+    urlsOnly = args.urls_only
 
     asyncio.run(
         Start(
@@ -427,6 +447,7 @@ def main():
             saveHtml=saveHtml,
             saveMd=saveMd,
             outputDir=outputDir,
+            urlsOnly=urlsOnly,
         )
     )
 
