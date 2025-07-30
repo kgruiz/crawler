@@ -1,9 +1,17 @@
-# Stealth Crawler
+<h1 align="center">🥷🏻 Stealth Crawler</h1>
 
-A headless-Chrome web crawler that discovers same-host links and optionally saves HTML, Markdown, PDF, or screenshots. Use as a library or via the `stealth-crawler` CLI.
+<p align="center">
+A headless-Chrome web crawler that discovers same-host links and optionally saves HTML, Markdown, PDF, or screenshots. Use as a library or via the <code>stealth-crawler</code> CLI.
+</p>
 
-[![PyPI](https://img.shields.io/pypi/v/stealth-crawler.svg)](https://pypi.org/project/stealth-crawler/)
-[![License](https://img.shields.io/pypi/l/stealth-crawler.svg)](https://github.com/kgruiz/stealth-crawler/blob/main/LICENSE)
+<p align="center">
+  <a href="https://pypi.org/project/stealth-crawler/">
+    <img src="https://img.shields.io/pypi/v/stealth-crawler.svg" alt="PyPI">
+  </a>&nbsp;&nbsp;
+  <a href="https://github.com/kgruiz/stealth-crawler/blob/main/LICENSE">
+    <img src="https://img.shields.io/pypi/l/stealth-crawler.svg" alt="License">
+  </a>
+</p>
 
 ---
 
