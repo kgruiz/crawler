@@ -199,7 +199,7 @@ class TestTruncateUrl:
     def test_truncate_41_chars(self):
         """Test URL that is 41 characters (should be truncated)."""
         crawler = StealthCrawler()
-        url = "https://example.com/path/to/resource1234"  # 41 chars
+        url = "https://example.com/path/to/resource1234x"  # 41 chars
         result = crawler._truncate_url(url)
 
         assert len(result) < len(url)
