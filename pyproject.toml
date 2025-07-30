@@ -9,7 +9,7 @@ description = "A stealth web crawler using headless Chrome"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
 authors = [
-    {name = "Kaden Gruizenga"},
+    {name = "Kaden Gruizenga", email = "kjgruiz@pm.me"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
