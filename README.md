@@ -68,7 +68,7 @@ Or via other tools:
 
 ## Quickstart
 
-### <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png" alt="Terminal" width="30" style="vertical-align: middle;" /> Command-Line
+### <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Terminalicon2.png" alt="Terminal" width="45" valign="middle" /> Command-Line
 
 ```bash
 # Discover URLs only
@@ -86,7 +86,7 @@ stealth-crawler crawl https://example.com \
 
 Run `stealth-crawler --help` for full options.
 
-### <img src="https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg" alt="Python" width="30" style="vertical-align: middle;" /> Python API
+### <img src="https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg" alt="Python" width="35" valign="middle" /> Python API
 
 ```python
 import asyncio
