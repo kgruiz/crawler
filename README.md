@@ -1,4 +1,6 @@
-<h1 align="center">🥷🏻 Stealth Crawler</h1>
+<h1 align="center">
+  <img src="icon.png" alt="Stealth Crawler Icon" width="110" valign="middle">&nbsp;<strong>Stealth Crawler</strong>
+</h1>
 
 <p align="center">
 A headless-Chrome web crawler that discovers same-host links and optionally saves HTML, Markdown, PDF, or screenshots. Use as a library or via the <code>stealth-crawler</code> CLI.
